@@ -21,6 +21,7 @@ on:
 jobs:
   deploy_dev:
     runs-on: self-hosted
+    if: ${{ github.event.inputs.run_deploy == 'true' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
