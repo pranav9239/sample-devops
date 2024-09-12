@@ -1,0 +1,51 @@
+name: CI/CD Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Which environment to deploy"
+        required: true
+        default: "dev"
+      run_destroy:
+        description: "Do you want to run destroy?"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  deploy_dev:
+    runs-on: self-hosted
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      run: hashicorp/setup-terraform@v1
+    
+    - name: Run Terraform
+      run: |
+        terraform init
+        terraform fmt
+        terraform validate
+        terraform apply -var-file="./dev.tfvars" -auto-approve
+
+  destroy_dev:
+    runs-on: self-hosted
+    if: ${{ github.event.inputs.run_destroy == 'true' }}
+    steps:
+    - name: Clean up and destroy environment
+      run: |
+        terraform init
+        terraform destroy -auto-approve
+
+  test:
+    runs-on: self-hosted
+    needs: deploy_dev
+    steps:
+    - name: Check if website is accessible
+      run: |
+        echo "Testing if the website is accessible"
+        sleep 10  # Wait for a few seconds to ensure the container is up
+        curl --fail http://localhost:8001
+        curl --fail http://localhost:8002
