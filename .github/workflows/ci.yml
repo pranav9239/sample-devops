@@ -7,6 +7,11 @@ on:
         description: "Which environment to deploy"
         required: true
         default: "dev"
+      run_deploy:
+        description: "Do you want to run deploy?"
+        required: true
+        default: true
+        type: boolean
       run_destroy:
         description: "Do you want to run destroy?"
         required: false
@@ -18,7 +23,7 @@ jobs:
     runs-on: self-hosted
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Get directory
       run: pwd
@@ -26,13 +31,21 @@ jobs:
     - name: Setup Terraform
       #run: hashicorp/setup-terraform@v3.1.2
       run: |
+        if ! command -v terraform &> /dev/null
+        then
+          echo "Terraform is not installed, installing now..."
           curl -o terraform.zip https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip
+          echo "Unzipping..."
           unzip terraform.zip
+          echo "Moving..."
           sudo mv terraform /usr/local/bin/
-          terraform --version
+        else
+          echo "Terraform is already installed."
+        fi
     
     - name: Run Terraform
       run: |
+        echo "Running terraform commands"
         terraform init
         terraform fmt
         terraform validate
@@ -44,6 +57,7 @@ jobs:
     steps:
     - name: Clean up and destroy environment
       run: |
+        echo "Destroying terraform resources"
         terraform init
         terraform destroy -auto-approve
 
