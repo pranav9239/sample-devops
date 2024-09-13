@@ -163,7 +163,7 @@ resource "kubernetes_deployment" "static_website_deployment" {
   }
 }
 
-# Deploy App2
+# Deploy dynamic_website
 resource "kubernetes_deployment" "dynamic_website_deployment" {
   #depends_on = [null_resource.build_docker_image_dynamic_website]
   depends_on = [ kubernetes_namespace.namespace ]
@@ -210,7 +210,7 @@ resource "kubernetes_deployment" "dynamic_website_deployment" {
   }
 }
 
-# Service for App1 using LoadBalancer
+# Service for static website using LoadBalancer
 resource "kubernetes_service" "static_website_service" {
   depends_on = [ kubernetes_namespace.namespace ]
 
@@ -220,20 +220,19 @@ resource "kubernetes_service" "static_website_service" {
   }
 
   spec {
-    type = "NodePort"
+    type = "LoadBalancer"
     selector = {
       app = var.label_static
     }
 
     port {
-      port        = var.container_port
+      port        = var.service_port_static
       target_port = var.container_port
-      node_port = var.service_port_static
     }
   }
 }
 
-# Service for App2 using LoadBalancer
+# Service for dynamic website using LoadBalancer
 resource "kubernetes_service" "dynamic_website_service" {
   depends_on = [ kubernetes_namespace.namespace ]
 
@@ -243,15 +242,87 @@ resource "kubernetes_service" "dynamic_website_service" {
   }
 
   spec {
-    type = "NodePort"
+    type = "LoadBalancer"
     selector = {
       app = var.label_dynamic
     }
 
     port {
-      port        = var.container_port
+      port        = var.service_port_dynamic
       target_port = var.container_port
-      node_port = var.service_port_dynamic
+    }
+  }
+}
+
+# Deploy container for running Uptime Kuma
+resource "kubernetes_deployment" "uptime_kuma" {
+  depends_on = [ kubernetes_namespace.namespace ]
+
+  metadata {
+    name      = "uptime-kuma"
+    namespace = kubernetes_namespace.namespace.metadata[0].name
+    labels = {
+      app = "kuma"
+    }
+  }
+
+  spec {
+    replicas = 1
+    selector {
+      match_labels = {
+        app = "kuma"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "kuma"
+        }
+      }
+      spec {
+        container {
+          name              = "kuma-container"
+          image             = "louislam/uptime-kuma:1"
+
+          port {
+            container_port = 3001
+          }
+
+          # Optional: Define an emptyDir volume if no persistent storage is needed
+          volume_mount {
+            name      = "uptime-kuma-storage"
+            mount_path = "/app/data"
+          }
+        }
+
+        volume {
+          name = "uptime-kuma-storage"
+          empty_dir {}
+        }
+      }
+    }
+  }
+}
+
+# Service for Uptime Kuma using LoadBalancer
+resource "kubernetes_service" "uptime_kuma_service" {
+  depends_on = [ kubernetes_namespace.namespace ]
+
+  metadata {
+    name      = "uptime-kuma-service"
+    namespace = kubernetes_namespace.namespace.metadata[0].name
+  }
+
+  spec {
+    type = "LoadBalancer"
+    selector = {
+      app = "kuma"
+    }
+
+    port {
+      port        = 3001
+      target_port = 3001
     }
   }
 }
