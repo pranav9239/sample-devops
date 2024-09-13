@@ -68,13 +68,13 @@ variable "container_port" {
 variable "service_port_static" {
   description = "Service port to be exposed for static website"
   type        = number
-  default     = 30001
+  default     = 8001
 }
 
 variable "service_port_dynamic" {
   description = "Service port to be exposed for dynamic website"
   type        = number
-  default     = 30002
+  default     = 8002
 }
 
 variable "website_version" {
