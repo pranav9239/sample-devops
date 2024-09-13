@@ -85,6 +85,9 @@ jobs:
     runs-on: self-hosted
     if: ${{ github.event.inputs.run_destroy == 'true' }}
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Clean up and destroy environment
       run: |
         echo "Destroying terraform resources"
