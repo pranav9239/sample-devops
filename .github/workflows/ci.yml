@@ -37,7 +37,7 @@ jobs:
       uses: actions/checkout@v4
     
     - name: Build docker
-      uses: |
+      run: |
         docker build -t app-static:${{ github.event.inputs.docker_build_version }} .
         docker build -t app-dynamic:${{ github.event.inputs.docker_build_version }} .
 
