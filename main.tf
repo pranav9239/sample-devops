@@ -1,3 +1,10 @@
+# Define fixed location for state file to maintain the state between runs
+terraform {
+  backend "local" {
+    path = "../../../terraform/state/terraform/state/terraform.tfstate"
+  }
+}
+
 # Define variables
 variable "image_static_website" {
   description = "Docker image for static website"

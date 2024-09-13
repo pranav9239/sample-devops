@@ -75,6 +75,10 @@ jobs:
           echo "Terraform is already installed."
         fi
     
+    # Ensure the state directory exists on the runner
+    - name: Create state directory
+      run: mkdir -p ../../../terraform/state
+
     - name: Terraform init and validate
       run: |
         echo "Running terraform commands"
