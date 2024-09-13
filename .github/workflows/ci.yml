@@ -38,8 +38,8 @@ jobs:
     
     - name: Build docker
       run: |
-        docker build -t app-static:${{ github.event.inputs.docker_build_version }} .
-        docker build -t app-dynamic:${{ github.event.inputs.docker_build_version }} .
+        docker build -t app-static:${{ github.event.inputs.docker_build_version }} ./spotify-clone-website/
+        docker build -t app-dynamic:${{ github.event.inputs.docker_build_version }} ./website-visit-tracker/
 
   deploy_dev:
     runs-on: self-hosted
