@@ -112,7 +112,8 @@ resource "kubernetes_namespace" "namespace" {
 
 # Deploy static_website
 resource "kubernetes_deployment" "static_website_deployment" {
-  depends_on = [null_resource.build_docker_image_static_website]
+  #depends_on = [null_resource.build_docker_image_static_website]
+  depends_on = [ kubernetes_namespace.namespace ]
 
   metadata {
     name      = "static-website-deployment"
@@ -153,7 +154,8 @@ resource "kubernetes_deployment" "static_website_deployment" {
 
 # Deploy App2
 resource "kubernetes_deployment" "dynamic_website_deployment" {
-  depends_on = [null_resource.build_docker_image_dynamic_website]
+  #depends_on = [null_resource.build_docker_image_dynamic_website]
+  depends_on = [ kubernetes_namespace.namespace ]
 
   metadata {
     name      = "dynamic-website-deployment"
@@ -194,6 +196,8 @@ resource "kubernetes_deployment" "dynamic_website_deployment" {
 
 # Service for App1 using LoadBalancer
 resource "kubernetes_service" "static_website_service" {
+  depends_on = [ kubernetes_namespace.namespace ]
+
   metadata {
     name      = "static-website-service"
     namespace = kubernetes_namespace.namespace.metadata[0].name
@@ -214,6 +218,8 @@ resource "kubernetes_service" "static_website_service" {
 
 # Service for App2 using LoadBalancer
 resource "kubernetes_service" "dynamic_website_service" {
+  depends_on = [ kubernetes_namespace.namespace ]
+  
   metadata {
     name      = "dynamic-website-service"
     namespace = kubernetes_namespace.namespace.metadata[0].name
