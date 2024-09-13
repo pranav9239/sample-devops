@@ -31,7 +31,7 @@ on:
 jobs:
   build_docker:
     runs-on: self-hosted
-    if: ${{ github.event.inputs.run_deploy == 'true' }}
+    if: ${{ github.event.inputs.run_docker_build == 'true' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
