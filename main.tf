@@ -68,13 +68,19 @@ variable "container_port" {
 variable "service_port_static" {
   description = "Service port to be exposed for static website"
   type        = number
-  default     = 8001
+  default     = 30001
 }
 
 variable "service_port_dynamic" {
   description = "Service port to be exposed for dynamic website"
   type        = number
-  default     = 8002
+  default     = 30002
+}
+
+variable "website_version" {
+  description = "Version of the website"
+  type        = string
+  default     = "v1.0.0"
 }
 
 provider "kubernetes" {
@@ -146,6 +152,11 @@ resource "kubernetes_deployment" "static_website_deployment" {
           port {
             container_port = var.container_port
           }
+
+          env {
+            name = "WEBSITE_VERSION"
+            value = var.website_version
+          }
         }
       }
     }
@@ -188,6 +199,11 @@ resource "kubernetes_deployment" "dynamic_website_deployment" {
           port {
             container_port = var.container_port
           }
+
+          env {
+            name = "WEBSITE_VERSION"
+            value = var.website_version
+          }
         }
       }
     }
@@ -204,14 +220,15 @@ resource "kubernetes_service" "static_website_service" {
   }
 
   spec {
-    type = "LoadBalancer"
+    type = "NodePort"
     selector = {
       app = var.label_static
     }
 
     port {
-      port        = var.service_port_static
+      port        = var.container_port
       target_port = var.container_port
+      node_port = var.service_port_static
     }
   }
 }
@@ -219,21 +236,22 @@ resource "kubernetes_service" "static_website_service" {
 # Service for App2 using LoadBalancer
 resource "kubernetes_service" "dynamic_website_service" {
   depends_on = [ kubernetes_namespace.namespace ]
-  
+
   metadata {
     name      = "dynamic-website-service"
     namespace = kubernetes_namespace.namespace.metadata[0].name
   }
 
   spec {
-    type = "LoadBalancer"
+    type = "NodePort"
     selector = {
       app = var.label_dynamic
     }
 
     port {
-      port        = var.service_port_dynamic
+      port        = var.container_port
       target_port = var.container_port
+      node_port = var.service_port_dynamic
     }
   }
 }

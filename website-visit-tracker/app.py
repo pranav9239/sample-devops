@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from redis import Redis, RedisError
 import os
 import socket
@@ -14,6 +14,7 @@ COUNTER_FIELD = 'counter'
 
 app = Flask(__name__)
 
+VERSION = os.getenv("WEBSITE_VERSION", "v1.0.0")
 
 @app.route("/")
 def hello():
@@ -50,6 +51,9 @@ def hello():
     return html.format(name=os.getenv("NAME", "world"),
                        hostname=socket.gethostname(), visits=visits)
 
+@app.route("/version")
+def version():
+    return jsonify({"version": VERSION})
 
 if __name__ == "__main__":
 
