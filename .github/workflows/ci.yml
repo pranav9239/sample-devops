@@ -7,6 +7,16 @@ on:
         description: "Which environment to deploy"
         required: true
         default: "dev"
+      run_docker_build:
+        description: "Do you want to build docker image?"
+        required: true
+        default: false
+        type: boolean
+      docker_build_version:
+        description: "Which version of docker image?"
+        required: false
+        default: "latest"
+        type: string
       run_deploy:
         description: "Do you want to run deploy?"
         required: true
@@ -19,6 +29,18 @@ on:
         type: boolean
 
 jobs:
+  build_docker:
+    runs-on: self-hosted
+    if: ${{ github.event.inputs.run_deploy == 'true' }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Build docker
+      uses: |
+        docker build -t app-static:${{ github.event.inputs.docker_build_version }} .
+        docker build -t app-dynamic:${{ github.event.inputs.docker_build_version }} .
+
   deploy_dev:
     runs-on: self-hosted
     if: ${{ github.event.inputs.run_deploy == 'true' }}
@@ -44,12 +66,18 @@ jobs:
           echo "Terraform is already installed."
         fi
     
-    - name: Run Terraform
+    - name: Terraform init and validate
       run: |
         echo "Running terraform commands"
         terraform init
         terraform fmt
         terraform validate
+      
+    - name: Terraform apply
+      env:
+        TF_VAR_image_version_static_website: ${{ github.event.inputs.docker_build_version }}
+        TF_VAR_image_version_dynamic_website: ${{ github.event.inputs.docker_build_version }}
+      run: |
         terraform apply -var-file="./dev.tfvars" -auto-approve
 
   destroy_dev:

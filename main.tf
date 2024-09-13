@@ -89,7 +89,7 @@ resource "kubernetes_namespace" "namespace" {
 }
 
 # Build Docker Image for static_website
-resource "null_resource" "build_docker_image_static_website" {
+/* resource "null_resource" "build_docker_image_static_website" {
   provisioner "local-exec" {
     command = "docker build -t ${var.image_static_website}:${var.image_version_static_website} ${var.location_static_website}"
   }
@@ -97,10 +97,10 @@ resource "null_resource" "build_docker_image_static_website" {
   triggers = {
     image_id = "${timestamp()}"
   }
-}
+} */
 
-# Build Docker Image for App2
-resource "null_resource" "build_docker_image_dynamic_website" {
+# Build Docker Image for dynamic_website
+/* resource "null_resource" "build_docker_image_dynamic_website" {
   provisioner "local-exec" {
     command = "docker build -t ${var.image_dynamic_website}:${var.image_version_dynamic_website} ${var.location_dynamic_website}"
   }
@@ -108,7 +108,7 @@ resource "null_resource" "build_docker_image_dynamic_website" {
   triggers = {
     image_id = "${timestamp()}"
   }
-}
+} */
 
 # Deploy static_website
 resource "kubernetes_deployment" "static_website_deployment" {
