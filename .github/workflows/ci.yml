@@ -92,7 +92,7 @@ jobs:
       run: |
         echo "Destroying terraform resources"
         terraform init
-        terraform destroy -auto-approve
+        terraform destroy -refresh=false -auto-approve
 
   test:
     runs-on: self-hosted
